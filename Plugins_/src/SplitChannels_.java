@@ -12,9 +12,9 @@ public class SplitChannels_ implements PlugIn {
 		int imgHeight = img.getHeight();
 		String imgTitle = img.getShortTitle();
 
-		splitImageToChannel(imgTitle + " - " + "R", 0, imgWidth, imgHeight, img);
-		splitImageToChannel(imgTitle + " - " + "G", 1, imgWidth, imgHeight, img);
-		splitImageToChannel(imgTitle + " - " + "B", 2, imgWidth, imgHeight, img);
+		splitImageToChannel(imgTitle + " - splitted - " + "R", 0, imgWidth, imgHeight, img);
+		splitImageToChannel(imgTitle + " - splitted - " + "G", 1, imgWidth, imgHeight, img);
+		splitImageToChannel(imgTitle + " - splitted - " + "B", 2, imgWidth, imgHeight, img);
 	}
 
 	private void splitImageToChannel(String title, int channel, int imgWidth, int imgHeight, ImagePlus originalImage) {
