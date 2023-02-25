@@ -15,6 +15,8 @@ public class SplitChannels_ implements PlugIn {
 		splitImageToChannel(imgTitle + " - splitted - " + "R", 0, imgWidth, imgHeight, img);
 		splitImageToChannel(imgTitle + " - splitted - " + "G", 1, imgWidth, imgHeight, img);
 		splitImageToChannel(imgTitle + " - splitted - " + "B", 2, imgWidth, imgHeight, img);
+		
+		img.close();
 	}
 
 	private void splitImageToChannel(String title, int channel, int imgWidth, int imgHeight, ImagePlus originalImage) {
@@ -30,7 +32,6 @@ public class SplitChannels_ implements PlugIn {
 		}
 
 		splitedImg.show();
-
 	}
 
 }
