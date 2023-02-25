@@ -64,6 +64,7 @@ public class MergeChannels_ implements PlugIn {
 					imgProcessor.putPixel(column, row, new int[]{ RChannel, GChannel, BChannel });
 				}
 			}
+			splitedImg.close();
 			channel++;
 		}
 
