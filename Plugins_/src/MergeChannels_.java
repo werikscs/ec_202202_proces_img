@@ -2,7 +2,6 @@ import java.util.ArrayList;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 
@@ -12,24 +11,11 @@ public class MergeChannels_ implements PlugIn {
 	public void run(String arg) {
 
 		String text = "splitted";
-		ArrayList<ImagePlus> splitedImgsArray = getOpenedImagesByTextInTitle(text);
+		ArrayList<ImagePlus> splitedImgsArray = Utils.getOpenedImagesByTextInTitle(text);
 		ImagePlus referenceImg = splitedImgsArray.get(0);
 		ImagePlus mergedImg = createRGBImage(referenceImg, splitedImgsArray);
 
 		mergedImg.show();
-	}
-	
-	private ArrayList<ImagePlus> getOpenedImagesByTextInTitle(String text) {
-		String imgTitles[] = WindowManager.getImageTitles();
-		ArrayList<ImagePlus> splitedImgsArray = new ArrayList<ImagePlus>();
-
-		for (String title : imgTitles) {
-			if (title.contains(text)) {
-				ImagePlus tempImg = WindowManager.getImage(title);
-				splitedImgsArray.add(tempImg);
-			}
-		}
-		return splitedImgsArray;
 	}
 
 	private ImagePlus createRGBImage(ImagePlus referenceImg, ArrayList<ImagePlus> splitedImgsArray) {
