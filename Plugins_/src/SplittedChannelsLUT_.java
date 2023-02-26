@@ -16,6 +16,8 @@ public class SplittedChannelsLUT_ implements PlugIn {
 		byte[] blues = new byte[256];
 
 		for (ImagePlus img : images) {
+			ImagePlus imgCopy = img.duplicate();
+			
 			if (img.getTitle().contains("R")) {
 				for (int i = 0; i < 256; i++) {
 					reds[i] = (byte) i;
@@ -23,12 +25,9 @@ public class SplittedChannelsLUT_ implements PlugIn {
 					blues[i] = (byte) 0;
 				}
 
-				LUT lut = new LUT(reds, greens, blues);
-				ImagePlus imgCopy = img.duplicate();
 				imgCopy.setTitle("LUT - R");
-				imgCopy.setLut(lut);
-				imgCopy.show();
 			}
+			
 			if (img.getTitle().contains("G")) {
 				for (int i = 0; i < 256; i++) {
 					reds[i] = (byte) 0;
@@ -36,12 +35,9 @@ public class SplittedChannelsLUT_ implements PlugIn {
 					blues[i] = (byte) 0;
 				}
 
-				LUT lut = new LUT(reds, greens, blues);
-				ImagePlus imgCopy = img.duplicate();
 				imgCopy.setTitle("LUT - G");
-				imgCopy.setLut(lut);
-				imgCopy.show();
 			}
+			
 			if (img.getTitle().contains("B")) {
 				for (int i = 0; i < 256; i++) {
 					reds[i] = (byte) 0;
@@ -49,12 +45,11 @@ public class SplittedChannelsLUT_ implements PlugIn {
 					blues[i] = (byte) i;
 				}
 
-				LUT lut = new LUT(reds, greens, blues);
-				ImagePlus imgCopy = img.duplicate();
 				imgCopy.setTitle("LUT - B");
-				imgCopy.setLut(lut);
-				imgCopy.show();
 			}
+			
+			imgCopy.setLut(new LUT(reds, greens, blues));
+			imgCopy.show();
 		}
 
 	}
