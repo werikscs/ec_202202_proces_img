@@ -30,7 +30,7 @@ public class MergeChannels_ implements PlugIn {
 
 			for (int row = 0; row < imgHeight; row++) {
 				for (int column = 0; column < imgWidth; column++) {
-					int pixelValueSplitedImg = splitedImgProcessor.getPixel(column, row, null)[0];
+					int pixelValueSplitedImg = splitedImgProcessor.getPixel(column, row);
 					int pixelValueMergedImg[] = mergedImg.getPixel(column, row);
 
 					int RGBPixelValue[] = createRGBPixel(channel, pixelValueSplitedImg, pixelValueMergedImg);
