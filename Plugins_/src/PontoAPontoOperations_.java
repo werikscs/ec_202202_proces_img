@@ -1,13 +1,3 @@
-//Criar um plugin para alterar os valores de brilho e contraste de uma imagem,
-//bem como aplicar as técnicas de solarização e dessaturação na  mesma.
-//
-//Utilizar uma interface gráfica com quatro barras do tipo slider,
-//uma para cada técnica,  um botão "ok" e um botão "cancel".
-//As barras de slider alterarão as características da imagem quando movimentadas.
-//
-//Quando pressionado o botão "ok" as características da imagem serão alteradas de forma definitiva,
-//caso seja pressionado o botão "cancel" a imagem voltará para as suas caraterísticas originais.
-
 import java.awt.AWTEvent;
 import ij.IJ;
 import ij.ImagePlus;
@@ -50,89 +40,68 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 
 	@Override
 	public boolean dialogItemChanged(GenericDialog gui, AWTEvent event) {
-		int brightness = (int) gui.getNextNumber();
-		int contrast = (int) gui.getNextNumber();
-		int solarization = (int) gui.getNextNumber();
-		double desaturation =  gui.getNextNumber();
+		double brightness = gui.getNextNumber();
+		double contrast = gui.getNextNumber();
+		double solarization = gui.getNextNumber();
+		double desaturation = gui.getNextNumber();
 
 		if (brightness != SLIDERS_VALUES[0]) {
-//			System.out.println("brightness");
-			changeBrightness(brightness);
+			updateImage(Operation.BRIGHTNESS.name(), brightness);
 			SLIDERS_VALUES[0] = brightness;
 		}
 
 		if (contrast != SLIDERS_VALUES[1]) {
-//			System.out.println("contrast");
-			changeContrast(contrast);
+			updateImage(Operation.CONTRAST.name(), contrast);
 			SLIDERS_VALUES[1] = contrast;
 		}
 
 		if (solarization != SLIDERS_VALUES[2]) {
-//			System.out.println("solarization");
-			changeSolarization(solarization);
+			updateImage(Operation.SOLARIZATION.name(), solarization);
 			SLIDERS_VALUES[2] = solarization;
 		}
 
 		if (desaturation != SLIDERS_VALUES[3]) {
-//			System.out.println("desaturation");
-			changeDesaturation(desaturation);
+			updateImage(Operation.DESATURATION.name(), desaturation);
 			SLIDERS_VALUES[3] = desaturation;
 		}
 
 		return true;
 	}
 
-	private void changeBrightness(int brightness) {
-		ImagePlus img = IJ.getImage();
-		int imgWidth = img.getWidth();
-		int imgHeight = img.getHeight();
-		ImageProcessor imgProcessor = img.getProcessor();
-
-		if (BACKUP_IMG == null) {
-			BACKUP_IMG = img.duplicate();
-			BACKUP_IMG.setTitle(img.getTitle());
-		}
-
-		for (int row = 0; row < imgHeight; row++) {
-			for (int column = 0; column < imgWidth; column++) {
-				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				int RChannel = validatePixelValue((pixelValueArray[0] + brightness));
-				int GChannel = validatePixelValue((pixelValueArray[1] + brightness));
-				int BChannel = validatePixelValue((pixelValueArray[2] + brightness));
-				imgProcessor.putPixel(column, row, new int[] { RChannel, GChannel, BChannel });
-			}
-		}
-
-		img.updateAndDraw();
+	private int[] changeBrightness(int pixelValueArray[], double brightness) {
+		int RChannel = validatePixelValue((pixelValueArray[0] + brightness));
+		int GChannel = validatePixelValue((pixelValueArray[1] + brightness));
+		int BChannel = validatePixelValue((pixelValueArray[2] + brightness));
+		return new int[] { RChannel, GChannel, BChannel };
 	}
 
-	private void changeContrast(int contrast) {
-		ImagePlus img = IJ.getImage();
-		int imgWidth = img.getWidth();
-		int imgHeight = img.getHeight();
-		ImageProcessor imgProcessor = img.getProcessor();
-
-		if (BACKUP_IMG == null) {
-			BACKUP_IMG = img.duplicate();
-			BACKUP_IMG.setTitle(img.getTitle());
-		}
-
+	private int[] changeContrast(int pixelValueArray[], double contrast) {
 		double contrastFactor = (double) ((259 * (contrast + 255)) / (double) (255 * (259 - contrast)));
-
-		for (int row = 0; row < imgHeight; row++) {
-			for (int column = 0; column < imgWidth; column++) {
-				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				int RChannel = validatePixelValue((contrastFactor * (pixelValueArray[0] - contrast)) + contrast);
-				int GChannel = validatePixelValue((contrastFactor * (pixelValueArray[1] - contrast)) + contrast);
-				int BChannel = validatePixelValue((contrastFactor * (pixelValueArray[2] - contrast)) + contrast);
-				imgProcessor.putPixel(column, row, new int[] { RChannel, GChannel, BChannel });
-			}
-		}
-
-		img.updateAndDraw();
+		int RChannel = validatePixelValue((contrastFactor * (pixelValueArray[0] - contrast)) + contrast);
+		int GChannel = validatePixelValue((contrastFactor * (pixelValueArray[1] - contrast)) + contrast);
+		int BChannel = validatePixelValue((contrastFactor * (pixelValueArray[2] - contrast)) + contrast);
+		return new int[] { RChannel, GChannel, BChannel };
 	}
 
-	private void changeSolarization(int solarization) {
+	private int[] changeSolarization(int pixelValueArray[], double solarization) {
+		int RChannel = pixelValueArray[0] < solarization ? 255 - pixelValueArray[0] : pixelValueArray[0];
+		int GChannel = pixelValueArray[1] < solarization ? 255 - pixelValueArray[1] : pixelValueArray[1];
+		int BChannel = pixelValueArray[2] < solarization ? 255 - pixelValueArray[2] : pixelValueArray[2];
+		return new int[] { RChannel, GChannel, BChannel };
+	}
+
+	private int[] changeDesaturation(int pixelValueArray[], double desaturation) {
+		double pixelRToGray = 0.333 * pixelValueArray[0];
+		double pixelGToGray = 0.333 * pixelValueArray[1];
+		double pixelBToGray = 0.333 * pixelValueArray[2];
+		double pixelValueMean = pixelRToGray + pixelGToGray + pixelBToGray;
+		int RChannel = (int) (pixelValueMean + desaturation * (pixelValueArray[0] - pixelValueMean));
+		int GChannel = (int) (pixelValueMean + desaturation * (pixelValueArray[1] - pixelValueMean));
+		int BChannel = (int) (pixelValueMean + desaturation * (pixelValueArray[2] - pixelValueMean));
+		return new int[] { RChannel, GChannel, BChannel };
+	}
+
+	private void updateImage(String operation, double value) {
 		ImagePlus img = IJ.getImage();
 		int imgWidth = img.getWidth();
 		int imgHeight = img.getHeight();
@@ -146,43 +115,29 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
 				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				int RChannel = pixelValueArray[0] < solarization ? 255 - pixelValueArray[0] : pixelValueArray[0];
-				int GChannel = pixelValueArray[1] < solarization ? 255 - pixelValueArray[1] : pixelValueArray[1];
-				int BChannel = pixelValueArray[2] < solarization ? 255 - pixelValueArray[2] : pixelValueArray[2];
-				imgProcessor.putPixel(column, row, new int[] { RChannel, GChannel, BChannel });
+				int RGBValue[] = null;
+
+				if (Operation.BRIGHTNESS.name() == operation) {
+					RGBValue = changeBrightness(pixelValueArray, value);
+				}
+
+				if (Operation.CONTRAST.name() == operation) {
+					RGBValue = changeContrast(pixelValueArray, value);
+				}
+
+				if (Operation.SOLARIZATION.name() == operation) {
+					RGBValue = changeSolarization(pixelValueArray, value);
+				}
+
+				if (Operation.DESATURATION.name() == operation) {
+					RGBValue = changeDesaturation(pixelValueArray, value);
+				}
+
+				imgProcessor.putPixel(column, row, RGBValue);
 			}
 		}
 
 		img.updateAndDraw();
-	}
-
-	private void changeDesaturation(double desaturation) {
-		ImagePlus img = IJ.getImage();
-		int imgWidth = img.getWidth();
-		int imgHeight = img.getHeight();
-		ImageProcessor imgProcessor = img.getProcessor();
-
-		if (BACKUP_IMG == null) {
-			BACKUP_IMG = img.duplicate();
-			BACKUP_IMG.setTitle(img.getTitle());
-		}
-
-		for (int row = 0; row < imgHeight; row++) {
-			for (int column = 0; column < imgWidth; column++) {
-				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				double pixelRToGray = 0.333*pixelValueArray[0];
-				double pixelGToGray = 0.333*pixelValueArray[1];
-				double pixelBToGray = 0.333*pixelValueArray[2];
-				double pixelValue = pixelRToGray + pixelGToGray + pixelBToGray;
-				int RChannel = (int) (pixelValue + desaturation*(pixelValueArray[0] - pixelValue));
-				int GChannel = (int) (pixelValue + desaturation*(pixelValueArray[1] - pixelValue));
-				int BChannel = (int) (pixelValue + desaturation*(pixelValueArray[2] - pixelValue));
-				imgProcessor.putPixel(column, row, new int[] { RChannel, GChannel, BChannel });
-			}
-		}
-
-		img.updateAndDraw();
-
 	}
 
 	private int validatePixelValue(double value) {
@@ -191,6 +146,12 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		if (value > 255)
 			return 255;
 		return (int) value;
+	}
+
+	enum Operation {
+		BRIGHTNESS("brightness"), CONTRAST("contrast"), SOLARIZATION("solarization"), DESATURATION("desaturation");
+
+		Operation(String operation) {}
 	}
 
 }
