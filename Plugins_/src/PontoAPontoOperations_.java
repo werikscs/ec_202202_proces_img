@@ -81,7 +81,7 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
-				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
+				int pixelValueArray[] = img.getPixel(column, row);
 				int RGBValue[] = null;
 
 				if (operation == Operation.BRIGHTNESS.name()) {
