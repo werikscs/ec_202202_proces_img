@@ -68,6 +68,45 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		return true;
 	}
 
+	private void updateImage(String operation, double value) {
+		ImagePlus img = IJ.getImage();
+		int imgWidth = img.getWidth();
+		int imgHeight = img.getHeight();
+		ImageProcessor imgProcessor = img.getProcessor();
+
+		if (BACKUP_IMG == null) {
+			BACKUP_IMG = img.duplicate();
+			BACKUP_IMG.setTitle(img.getTitle());
+		}
+
+		for (int row = 0; row < imgHeight; row++) {
+			for (int column = 0; column < imgWidth; column++) {
+				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
+				int RGBValue[] = null;
+
+				if (operation == Operation.BRIGHTNESS.name()) {
+					RGBValue = changeBrightness(pixelValueArray, value);
+				}
+
+				if (operation == Operation.CONTRAST.name()) {
+					RGBValue = changeContrast(pixelValueArray, value);
+				}
+
+				if (operation == Operation.SOLARIZATION.name()) {
+					RGBValue = changeSolarization(pixelValueArray, value);
+				}
+
+				if (operation == Operation.DESATURATION.name()) {
+					RGBValue = changeDesaturation(pixelValueArray, value);
+				}
+
+				imgProcessor.putPixel(column, row, RGBValue);
+			}
+		}
+
+		img.updateAndDraw();
+	}
+
 	private int[] changeBrightness(int pixelValueArray[], double brightness) {
 		int RChannel = validatePixelValue((pixelValueArray[0] + brightness));
 		int GChannel = validatePixelValue((pixelValueArray[1] + brightness));
@@ -101,45 +140,6 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		return new int[] { RChannel, GChannel, BChannel };
 	}
 
-	private void updateImage(String operation, double value) {
-		ImagePlus img = IJ.getImage();
-		int imgWidth = img.getWidth();
-		int imgHeight = img.getHeight();
-		ImageProcessor imgProcessor = img.getProcessor();
-
-		if (BACKUP_IMG == null) {
-			BACKUP_IMG = img.duplicate();
-			BACKUP_IMG.setTitle(img.getTitle());
-		}
-
-		for (int row = 0; row < imgHeight; row++) {
-			for (int column = 0; column < imgWidth; column++) {
-				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				int RGBValue[] = null;
-
-				if (Operation.BRIGHTNESS.name() == operation) {
-					RGBValue = changeBrightness(pixelValueArray, value);
-				}
-
-				if (Operation.CONTRAST.name() == operation) {
-					RGBValue = changeContrast(pixelValueArray, value);
-				}
-
-				if (Operation.SOLARIZATION.name() == operation) {
-					RGBValue = changeSolarization(pixelValueArray, value);
-				}
-
-				if (Operation.DESATURATION.name() == operation) {
-					RGBValue = changeDesaturation(pixelValueArray, value);
-				}
-
-				imgProcessor.putPixel(column, row, RGBValue);
-			}
-		}
-
-		img.updateAndDraw();
-	}
-
 	private int validatePixelValue(double value) {
 		if (value < 0)
 			return 0;
@@ -151,7 +151,8 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 	enum Operation {
 		BRIGHTNESS("brightness"), CONTRAST("contrast"), SOLARIZATION("solarization"), DESATURATION("desaturation");
 
-		Operation(String operation) {}
+		Operation(String operation) {
+		}
 	}
 
 }
