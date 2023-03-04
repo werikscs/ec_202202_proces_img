@@ -86,17 +86,11 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 
 				if (operation == Operation.BRIGHTNESS.name()) {
 					RGBValue = changeBrightness(pixelValueArray, value);
-				}
-
-				if (operation == Operation.CONTRAST.name()) {
+				} else if (operation == Operation.CONTRAST.name()) {
 					RGBValue = changeContrast(pixelValueArray, value);
-				}
-
-				if (operation == Operation.SOLARIZATION.name()) {
+				}	else if (operation == Operation.SOLARIZATION.name()) {
 					RGBValue = changeSolarization(pixelValueArray, value);
-				}
-
-				if (operation == Operation.DESATURATION.name()) {
+				}	else if (operation == Operation.DESATURATION.name()) {
 					RGBValue = changeDesaturation(pixelValueArray, value);
 				}
 

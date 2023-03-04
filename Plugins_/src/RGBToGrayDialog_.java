@@ -32,20 +32,21 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 		gui.showDialog();
 		return gui;
 	}
-	
+
 	private void checkGUIOutput(GenericDialog gui) {
 		ImagePlus img = IJ.getImage();
-		
+
 		if (gui.wasCanceled()) {
 			img.setImage(BACKUP_IMG);
 			img.updateAndDraw();
+			return;
 		}
-			
+
 		if (gui.wasOKed()) {
 			boolean isToApplyModificationsToCopy = gui.getNextBoolean();
 			String imgNewTitle = gui.getNextRadioButton() + " - " + img.getTitle();
-			
-			if(isToApplyModificationsToCopy) {
+
+			if (isToApplyModificationsToCopy) {
 				ImagePlus imgCopy = img.duplicate();
 				imgCopy.setTitle(imgNewTitle);
 				img.setImage(BACKUP_IMG);
@@ -53,9 +54,9 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 				imgCopy.show();
 				return;
 			} else {
-				img.setTitle(imgNewTitle);				
+				img.setTitle(imgNewTitle);
 			}
-			
+
 		}
 	}
 
@@ -71,19 +72,19 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 
 	private double[] getPixelWeightsOfChosenStrategy(String chosenStrategy) {
 		double channelsWeight[] = null;
-		
+
 		if (chosenStrategy.equals(Strategies.MEDIA_ARITMETICA.name())) {
-			channelsWeight = new double[]{0.333, 0.333, 0.333};
+			channelsWeight = new double[] { 0.333, 0.333, 0.333 };
 		}
-		
+
 		if (chosenStrategy.equals(Strategies.LUMINANCE_TV_ANALOGICAS.name())) {
-			channelsWeight = new double[]{0.299, 0.587, 0.114};
+			channelsWeight = new double[] { 0.299, 0.587, 0.114 };
 		}
-		
+
 		if (chosenStrategy.equals(Strategies.LUMINANCE_SISTEMAS_DIGITAIS.name())) {
-			channelsWeight = new double[]{0.2125, 0.7154, 0.072};
+			channelsWeight = new double[] { 0.2125, 0.7154, 0.072 };
 		}
-		
+
 		return channelsWeight;
 	}
 
@@ -92,8 +93,8 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 		int imgWidth = img.getWidth();
 		int imgHeight = img.getHeight();
 		ImageProcessor imgProcessor = img.getProcessor();
-		
-		if(BACKUP_IMG == null) {
+
+		if (BACKUP_IMG == null) {
 			BACKUP_IMG = img.duplicate();
 			BACKUP_IMG.setTitle(img.getTitle());
 		}
@@ -101,17 +102,17 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
 				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				int RChannel = (int) (pixelValueArray[0]*channelsWeight[0]);
-				int GChannel = (int) (pixelValueArray[1]*channelsWeight[1]);
-				int BChannel = (int) (pixelValueArray[2]*channelsWeight[2]);
+				int RChannel = (int) (pixelValueArray[0] * channelsWeight[0]);
+				int GChannel = (int) (pixelValueArray[1] * channelsWeight[1]);
+				int BChannel = (int) (pixelValueArray[2] * channelsWeight[2]);
 				int newPixelvalue = RChannel + GChannel + BChannel;
-				imgProcessor.putPixel(column, row, new int[] { newPixelvalue, newPixelvalue, newPixelvalue});
+				imgProcessor.putPixel(column, row, new int[] { newPixelvalue, newPixelvalue, newPixelvalue });
 			}
 		}
-		
+
 		img.updateAndDraw();
 	}
-	
+
 	enum Strategies {
 		MEDIA_ARITMETICA("Média Aritmética"),
 		LUMINANCE_TV_ANALOGICAS("Luminance: TVs analógicas"),
