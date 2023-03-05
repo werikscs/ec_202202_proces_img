@@ -46,29 +46,29 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		double desaturation = gui.getNextNumber();
 
 		if (brightness != SLIDERS_VALUES[0]) {
-			updateImage(Operation.BRIGHTNESS.name(), brightness);
+			updateImage((pixelValueArray, value) -> changeBrightness(pixelValueArray, brightness), brightness);
 			SLIDERS_VALUES[0] = brightness;
 		}
 
 		if (contrast != SLIDERS_VALUES[1]) {
-			updateImage(Operation.CONTRAST.name(), contrast);
+			updateImage((pixelValueArray, value) -> changeContrast(pixelValueArray, contrast), contrast);
 			SLIDERS_VALUES[1] = contrast;
 		}
 
 		if (solarization != SLIDERS_VALUES[2]) {
-			updateImage(Operation.SOLARIZATION.name(), solarization);
+			updateImage((pixelValueArray, value) -> changeSolarization(pixelValueArray, solarization), solarization);
 			SLIDERS_VALUES[2] = solarization;
 		}
 
 		if (desaturation != SLIDERS_VALUES[3]) {
-			updateImage(Operation.DESATURATION.name(), desaturation);
+			updateImage((pixelValueArray, value) -> changeDesaturation(pixelValueArray, desaturation), desaturation);
 			SLIDERS_VALUES[3] = desaturation;
 		}
 
 		return true;
 	}
 
-	private void updateImage(String operation, double value) {
+	private void updateImage(IOperation operation, double value) {
 		ImagePlus img = IJ.getImage();
 		int imgWidth = img.getWidth();
 		int imgHeight = img.getHeight();
@@ -81,18 +81,10 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
-				int pixelValueArray[] = img.getPixel(column, row);
+				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
 				int RGBValue[] = null;
 
-				if (operation == Operation.BRIGHTNESS.name()) {
-					RGBValue = changeBrightness(pixelValueArray, value);
-				} else if (operation == Operation.CONTRAST.name()) {
-					RGBValue = changeContrast(pixelValueArray, value);
-				}	else if (operation == Operation.SOLARIZATION.name()) {
-					RGBValue = changeSolarization(pixelValueArray, value);
-				}	else if (operation == Operation.DESATURATION.name()) {
-					RGBValue = changeDesaturation(pixelValueArray, value);
-				}
+				RGBValue = operation.calculate(pixelValueArray, value);
 
 				imgProcessor.putPixel(column, row, RGBValue);
 			}

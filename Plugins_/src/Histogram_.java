@@ -36,8 +36,8 @@ public class Histogram_ implements PlugIn, DialogListener {
 	}
 
 	@Override
-	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-		// TODO Auto-generated method stub
+	public boolean dialogItemChanged(GenericDialog gui, AWTEvent event) {
+		String chosenTechnique = gui.getNextRadioButton();
 		return true;
 	}
 
