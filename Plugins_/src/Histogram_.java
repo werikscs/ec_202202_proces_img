@@ -73,14 +73,8 @@ public class Histogram_ implements PlugIn, DialogListener {
 					numOfPixelsByIntensity[pixelValue] += 1;
 					// calcula a probabilidade do pixel
 					pixelProbability[pixelValue] = (numOfPixelsByIntensity[pixelValue] / (double) totalNumberOfPixels);
+					
 					imgProcessor.putPixel(column, row, new int[] { pixelValue, pixelValue, pixelValue });
-
-//					if (row < 1) {
-//						IJ.log("pixel value: " + pixelValue);
-//						IJ.log("qtd pixels by intensity: " + numOfPixelsByIntensity[pixelValue]);
-//						IJ.log("pixel probability: " + pixelProbability[pixelValue]);
-//						IJ.log("----------------");
-//					}
 				}
 			}
 
@@ -90,12 +84,6 @@ public class Histogram_ implements PlugIn, DialogListener {
 
 			for (int i = 1; i < pixelProbability.length; i++) {
 				cumulativeProbability[i] = cumulativeProbability[i - 1] + pixelProbability[i];
-				if (i < 10) {
-					IJ.log("qtd pixels by intensity: " + numOfPixelsByIntensity[i - 1]);
-					IJ.log("pixel probability: " + pixelProbability[i - 1]);
-					IJ.log("cumulative probability: " + cumulativeProbability[i - 1]);
-					IJ.log("----------------");
-				}
 			}
 
 			// novo range de intensidade
@@ -104,17 +92,13 @@ public class Histogram_ implements PlugIn, DialogListener {
 			int pixelsToNewRange[] = new int[256];
 
 			for (int i = 0; i < cumulativeProbability.length; i++) {
-				pixelsToNewRange[i] = (int) Math.floor(cumulativeProbability[i] * NEW_RANGE);
+				pixelsToNewRange[i] = (int) Math.round(cumulativeProbability[i] * NEW_RANGE);
 			}
 
 			for (int row = 0; row < imgHeight; row++) {
 				for (int column = 0; column < imgWidth; column++) {
 					int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
 					int newPixelValue = pixelsToNewRange[pixelValueArray[0]];
-					
-					if (row < 1) {
-						IJ.log("new pixel value: " + newPixelValue);
-					}
 
 					imgProcessor.putPixel(column, row, new int[] { newPixelValue, newPixelValue, newPixelValue });
 				}
