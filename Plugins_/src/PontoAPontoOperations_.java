@@ -8,7 +8,6 @@ import ij.process.ImageProcessor;
 
 public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 	ImagePlus BACKUP_IMG = null;
-	double SLIDERS_VALUES[] = { 0, 0, 0, 1 };
 
 	@Override
 	public void run(String arg) {
@@ -20,10 +19,10 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		GenericDialog gui = new GenericDialog("Operações Ponto a Ponto");
 		gui.addDialogListener(this);
 
-		gui.addSlider("Brilho", -255, 255, SLIDERS_VALUES[0], 1);
-		gui.addSlider("Contraste", 0, 255, SLIDERS_VALUES[1], 1);
-		gui.addSlider("Solarização", 0, 255, SLIDERS_VALUES[2], 1);
-		gui.addSlider("Dessaturação", 0, 1, SLIDERS_VALUES[3], 0.01);
+		gui.addSlider("Brilho", -255, 255, 0, 1);
+		gui.addSlider("Contraste", 0, 255, 0, 1);
+		gui.addSlider("Solarização", 0, 255, 0, 1);
+		gui.addSlider("Dessaturação", 0, 1, 1, 0.01);
 
 		gui.showDialog();
 		return gui;
@@ -44,31 +43,15 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		double contrast = gui.getNextNumber();
 		double solarization = gui.getNextNumber();
 		double desaturation = gui.getNextNumber();
-
-		if (brightness != SLIDERS_VALUES[0]) {
-			updateImage((pixelValueArray, value) -> changeBrightness(pixelValueArray, brightness), brightness);
-			SLIDERS_VALUES[0] = brightness;
-		}
-
-		if (contrast != SLIDERS_VALUES[1]) {
-			updateImage((pixelValueArray, value) -> changeContrast(pixelValueArray, contrast), contrast);
-			SLIDERS_VALUES[1] = contrast;
-		}
-
-		if (solarization != SLIDERS_VALUES[2]) {
-			updateImage((pixelValueArray, value) -> changeSolarization(pixelValueArray, solarization), solarization);
-			SLIDERS_VALUES[2] = solarization;
-		}
-
-		if (desaturation != SLIDERS_VALUES[3]) {
-			updateImage((pixelValueArray, value) -> changeDesaturation(pixelValueArray, desaturation), desaturation);
-			SLIDERS_VALUES[3] = desaturation;
-		}
+		
+		double operationsValue[] = {brightness, contrast, solarization, desaturation};
+		
+		updateImage(operationsValue);
 
 		return true;
 	}
 
-	private void updateImage(IOperation operation, double value) {
+	private void updateImage(double operationsValue[]) {
 		ImagePlus img = IJ.getImage();
 		int imgWidth = img.getWidth();
 		int imgHeight = img.getHeight();
@@ -82,9 +65,10 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
 				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-				int RGBValue[] = null;
-
-				RGBValue = operation.calculate(pixelValueArray, value);
+				int RGBValue[] = changeBrightness(pixelValueArray, operationsValue[0]);
+				RGBValue = changeContrast(RGBValue, operationsValue[1]);
+				RGBValue = changeSolarization(RGBValue, operationsValue[2]);
+				RGBValue = changeDesaturation(RGBValue, operationsValue[3]);
 
 				imgProcessor.putPixel(column, row, RGBValue);
 			}
