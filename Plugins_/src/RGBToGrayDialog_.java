@@ -92,12 +92,15 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 		ImagePlus img = IJ.getImage();
 		int imgWidth = img.getWidth();
 		int imgHeight = img.getHeight();
-		ImageProcessor imgProcessor = img.getProcessor();
 
 		if (BACKUP_IMG == null) {
 			BACKUP_IMG = img.duplicate();
 			BACKUP_IMG.setTitle(img.getTitle());
 		}
+		
+		ImagePlus grayImg = IJ.createImage(img.getTitle(), "8-bit", imgWidth, imgHeight, 1);
+		img.setImage(grayImg);
+		ImageProcessor imgProcessor = img.getProcessor();
 
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
@@ -109,7 +112,7 @@ public class RGBToGrayDialog_ implements PlugIn, DialogListener {
 				imgProcessor.putPixel(column, row, new int[] { newPixelvalue, newPixelvalue, newPixelvalue });
 			}
 		}
-
+		
 		img.updateAndDraw();
 	}
 
