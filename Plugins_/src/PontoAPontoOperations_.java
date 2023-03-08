@@ -20,7 +20,7 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 		gui.addDialogListener(this);
 
 		gui.addSlider("Brilho", -255, 255, 0, 1);
-		gui.addSlider("Contraste", 0, 255, 0, 1);
+		gui.addSlider("Contraste", -255, 255, 0, 1);
 		gui.addSlider("Solarização", 0, 255, 0, 1);
 		gui.addSlider("Dessaturação", 0, 1, 1, 0.01);
 
