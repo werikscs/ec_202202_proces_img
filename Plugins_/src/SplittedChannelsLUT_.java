@@ -13,31 +13,31 @@ public class SplittedChannelsLUT_ implements PlugIn {
 
 		for (ImagePlus img : images) {
 			ImagePlus imgCopy = img.duplicate();
-			byte[] reds = new byte[256];
-			byte[] greens = new byte[256];
-			byte[] blues = new byte[256];
+			byte[] RChannel = new byte[256];
+			byte[] GChannel = new byte[256];
+			byte[] BChannel = new byte[256];
 			byte[] lutChannel = null;
 			
 			if (img.getTitle().contains("R")) {
 				imgCopy.setTitle("LUT - R");
-				lutChannel = reds;
+				lutChannel = RChannel;
 			}
 			
 			if (img.getTitle().contains("G")) {
 				imgCopy.setTitle("LUT - G");
-				lutChannel = greens;
+				lutChannel = GChannel;
 			}
 			
 			if (img.getTitle().contains("B")) {
 				imgCopy.setTitle("LUT - B");
-				lutChannel = blues;
+				lutChannel = BChannel;
 			}
 			
 			for (int i = 1; i < 256; i++) {
 				lutChannel[i] = (byte) i;
 			}
 			
-			imgCopy.setLut(new LUT(reds, greens, blues));
+			imgCopy.setLut(new LUT(RChannel, GChannel, BChannel));
 			imgCopy.show();
 		}
 	}
