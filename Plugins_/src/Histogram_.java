@@ -41,27 +41,32 @@ public class Histogram_ implements PlugIn, DialogListener {
 	public boolean dialogItemChanged(GenericDialog gui, AWTEvent event) {
 		String chosenTechnique = gui.getNextRadioButton();
 
-		if (chosenTechnique.equals(Techniques.EXPANSAO.name())) {
-			ImagePlus img = IJ.getImage();
-			int imgWidth = img.getWidth();
-			int imgHeight = img.getHeight();
-			ImageProcessor imgProcessor = img.getProcessor();
+		ImagePlus img = IJ.getImage();
+		int imgWidth = img.getWidth();
+		int imgHeight = img.getHeight();
+		ImageProcessor imgProcessor = img.getProcessor();
 
-			if (BACKUP_IMG == null) {
-				BACKUP_IMG = img.duplicate();
-				BACKUP_IMG.setTitle(img.getTitle());
-			}
+		if (BACKUP_IMG == null) {
+			BACKUP_IMG = img.duplicate();
+			BACKUP_IMG.setTitle(img.getTitle());
+		}
+
+		if (chosenTechnique.equals(Techniques.EXPANSAO.name())) {
 
 			int minPossiblePixelValue = 0;
 			int maxPossiblePixelValue = 255;
-			int lowestPixelValue = getLowestPixel(img);
-			int highestPixelValue = getHighestPixel(img);
+			int lowestPixelValue = getLowestPixel(BACKUP_IMG);
+			int highestPixelValue = getHighestPixel(BACKUP_IMG);
 
 			for (int row = 0; row < imgHeight; row++) {
 				for (int column = 0; column < imgWidth; column++) {
-					int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
+					int pixelValue = BACKUP_IMG.getPixel(column, row)[0];
 
-					int newPixelValue = minPossiblePixelValue + (pixelValueArray[0] - lowestPixelValue)* ((maxPossiblePixelValue - minPossiblePixelValue) / (highestPixelValue - lowestPixelValue));
+					int pl = pixelValue - lowestPixelValue;
+					int maxMin = maxPossiblePixelValue - minPossiblePixelValue;
+					int hl = highestPixelValue - lowestPixelValue;
+
+					int newPixelValue = (int) (minPossiblePixelValue + (pl) * ((double)(maxMin) / (hl)));
 
 					imgProcessor.putPixel(column, row, new int[] { newPixelValue, newPixelValue, newPixelValue });
 				}
@@ -71,59 +76,17 @@ public class Histogram_ implements PlugIn, DialogListener {
 		}
 
 		if (chosenTechnique.equals(Techniques.EQUALIZACAO.name())) {
-			ImagePlus img = IJ.getImage();
-			int imgWidth = img.getWidth();
-			int imgHeight = img.getHeight();
-			ImageProcessor imgProcessor = img.getProcessor();
 
-			if (BACKUP_IMG == null) {
-				BACKUP_IMG = img.duplicate();
-				BACKUP_IMG.setTitle(img.getTitle());
-			}
-
-			int numOfPixelsByIntensity[] = new int[256];
-			double pixelProbability[] = new double[256];
-
-			int totalNumberOfPixels = imgHeight * imgWidth;
+			int numOfPixelsByIntensity[] = getNumOfPixelsByIntensity(BACKUP_IMG);
+			double pixelProbability[] = getPixelsProbability(BACKUP_IMG, numOfPixelsByIntensity);
+			double cumulativeProbability[] = getCumulativeProbability(pixelProbability);
+			int newIntensityRange = 255;
+			int pixelsIntensityConvertedToNewRange[] = getPixelsConvertedToNewRange(cumulativeProbability, newIntensityRange);
 
 			for (int row = 0; row < imgHeight; row++) {
 				for (int column = 0; column < imgWidth; column++) {
-					int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-					int RChannel = (int) (pixelValueArray[0] * 0.333);
-					int GChannel = (int) (pixelValueArray[1] * 0.333);
-					int BChannel = (int) (pixelValueArray[2] * 0.333);
-					int pixelValue = RChannel + GChannel + BChannel;
-
-					// registra numeros de pixel de determinada intensidade
-					numOfPixelsByIntensity[pixelValue] += 1;
-					// calcula a probabilidade do pixel
-					pixelProbability[pixelValue] = (numOfPixelsByIntensity[pixelValue] / (double) totalNumberOfPixels);
-
-					imgProcessor.putPixel(column, row, new int[] { pixelValue, pixelValue, pixelValue });
-				}
-			}
-
-			// calcula a probabilidade acumulada
-			double cumulativeProbability[] = new double[256];
-			cumulativeProbability[0] = pixelProbability[0];
-
-			for (int i = 1; i < pixelProbability.length; i++) {
-				cumulativeProbability[i] = cumulativeProbability[i - 1] + pixelProbability[i];
-			}
-
-			// novo range de intensidade
-			int NEW_RANGE = 255;
-
-			int pixelsToNewRange[] = new int[256];
-
-			for (int i = 0; i < cumulativeProbability.length; i++) {
-				pixelsToNewRange[i] = (int) Math.round(cumulativeProbability[i] * NEW_RANGE);
-			}
-
-			for (int row = 0; row < imgHeight; row++) {
-				for (int column = 0; column < imgWidth; column++) {
-					int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
-					int newPixelValue = pixelsToNewRange[pixelValueArray[0]];
+					int pixelValueArray = BACKUP_IMG.getPixel(column, row)[0];
+					int newPixelValue = pixelsIntensityConvertedToNewRange[pixelValueArray];
 
 					imgProcessor.putPixel(column, row, new int[] { newPixelValue, newPixelValue, newPixelValue });
 				}
@@ -133,6 +96,56 @@ public class Histogram_ implements PlugIn, DialogListener {
 		}
 
 		return true;
+	}
+
+	private int[] getPixelsConvertedToNewRange(double[] cumulativeProbability, int newIntensityRange) {
+		int pixelsToNewRange[] = new int[256];
+
+		for (int i = 0; i < cumulativeProbability.length; i++) {
+			pixelsToNewRange[i] = (int) Math.floor(cumulativeProbability[i] * newIntensityRange);
+		}
+
+		return pixelsToNewRange;
+	}
+
+	private double[] getCumulativeProbability(double[] pixelProbability) {
+		double cumulativeProbability[] = new double[256];
+		cumulativeProbability[0] = pixelProbability[0];
+
+		for (int i = 1; i < pixelProbability.length; i++) {
+			cumulativeProbability[i] = cumulativeProbability[i - 1] + pixelProbability[i];
+		}
+
+		return cumulativeProbability;
+	}
+
+	private double[] getPixelsProbability(ImagePlus img, int numOfPixelsByIntensity[]) {
+		double pixelProbability[] = new double[256];
+		int imgHeight = img.getHeight();
+		int imgWidth = img.getWidth();
+		int totalNumberOfPixels = imgHeight * imgWidth;
+
+		for (int row = 0; row < imgHeight; row++) {
+			for (int column = 0; column < imgWidth; column++) {
+				int pixelValue = img.getPixel(column, row)[0];
+				pixelProbability[pixelValue] = (numOfPixelsByIntensity[pixelValue] / (double) totalNumberOfPixels);
+			}
+		}
+
+		return pixelProbability;
+	}
+
+	private int[] getNumOfPixelsByIntensity(ImagePlus img) {
+		int numOfPixelsByIntensity[] = new int[256];
+
+		for (int row = 0; row < img.getHeight(); row++) {
+			for (int column = 0; column < img.getWidth(); column++) {
+				int pixelValue = img.getPixel(column, row)[0];
+				numOfPixelsByIntensity[pixelValue] += 1;
+			}
+		}
+
+		return numOfPixelsByIntensity;
 	}
 
 	private int getLowestPixel(ImagePlus img) {
