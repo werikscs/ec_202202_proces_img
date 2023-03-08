@@ -22,7 +22,7 @@ public class Histogram_ implements PlugIn, DialogListener {
 
 		gui.addMessage("Escolha a técnica:");
 		String techniques[] = { Techniques.EXPANSAO.name(), Techniques.EQUALIZACAO.name() };
-		gui.addRadioButtonGroup(null, techniques, 2, 1, Techniques.EXPANSAO.name());
+		gui.addRadioButtonGroup(null, techniques, 2, 1, Techniques.EQUALIZACAO.name());
 
 		gui.showDialog();
 		return gui;
@@ -42,7 +42,32 @@ public class Histogram_ implements PlugIn, DialogListener {
 		String chosenTechnique = gui.getNextRadioButton();
 
 		if (chosenTechnique.equals(Techniques.EXPANSAO.name())) {
-			IJ.showMessage(chosenTechnique);
+			ImagePlus img = IJ.getImage();
+			int imgWidth = img.getWidth();
+			int imgHeight = img.getHeight();
+			ImageProcessor imgProcessor = img.getProcessor();
+
+			if (BACKUP_IMG == null) {
+				BACKUP_IMG = img.duplicate();
+				BACKUP_IMG.setTitle(img.getTitle());
+			}
+
+			int minPossiblePixelValue = 0;
+			int maxPossiblePixelValue = 255;
+			int lowestPixelValue = getLowestPixel(img);
+			int highestPixelValue = getHighestPixel(img);
+
+			for (int row = 0; row < imgHeight; row++) {
+				for (int column = 0; column < imgWidth; column++) {
+					int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
+
+					int newPixelValue = minPossiblePixelValue + (pixelValueArray[0] - lowestPixelValue)* ((maxPossiblePixelValue - minPossiblePixelValue) / (highestPixelValue - lowestPixelValue));
+
+					imgProcessor.putPixel(column, row, new int[] { newPixelValue, newPixelValue, newPixelValue });
+				}
+			}
+
+			img.updateAndDraw();
 		}
 
 		if (chosenTechnique.equals(Techniques.EQUALIZACAO.name())) {
@@ -73,7 +98,7 @@ public class Histogram_ implements PlugIn, DialogListener {
 					numOfPixelsByIntensity[pixelValue] += 1;
 					// calcula a probabilidade do pixel
 					pixelProbability[pixelValue] = (numOfPixelsByIntensity[pixelValue] / (double) totalNumberOfPixels);
-					
+
 					imgProcessor.putPixel(column, row, new int[] { pixelValue, pixelValue, pixelValue });
 				}
 			}
@@ -108,6 +133,34 @@ public class Histogram_ implements PlugIn, DialogListener {
 		}
 
 		return true;
+	}
+
+	private int getLowestPixel(ImagePlus img) {
+		int lowestPixel = img.getPixel(0, 0)[0];
+
+		for (int row = 0; row < img.getHeight(); row++) {
+			for (int column = 0; column < img.getWidth(); column++) {
+				if (img.getPixel(row, column)[0] < lowestPixel) {
+					lowestPixel = img.getPixel(row, column)[0];
+				}
+			}
+		}
+
+		return lowestPixel;
+	}
+
+	private int getHighestPixel(ImagePlus img) {
+		int highestPixel = img.getPixel(0, 0)[0];
+
+		for (int row = 0; row < img.getHeight(); row++) {
+			for (int column = 0; column < img.getWidth(); column++) {
+				if (img.getPixel(row, column)[0] > highestPixel) {
+					highestPixel = img.getPixel(row, column)[0];
+				}
+			}
+		}
+
+		return highestPixel;
 	}
 
 	enum Techniques {
