@@ -10,7 +10,6 @@
 
 import java.awt.AWTEvent;
 
-import Histogram_.Techniques;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.DialogListener;
@@ -87,7 +86,7 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 				int pixelValueArray[] = BACKUP_IMG.getPixel(column, row);
 
 				
-				imgProcessor.putPixel(column, row, new int[] { pixelValue, pixelValue, pixelValue });
+//				imgProcessor.putPixel(column, row, new int[] { pixelValue, pixelValue, pixelValue });
 			}
 		}
 	}
