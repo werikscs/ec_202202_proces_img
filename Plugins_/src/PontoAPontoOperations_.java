@@ -86,9 +86,9 @@ public class PontoAPontoOperations_ implements PlugIn, DialogListener {
 
 	private int[] changeContrast(int pixelValueArray[], double contrast) {
 		double contrastFactor = (double) ((259 * (contrast + 255)) / (double) (255 * (259 - contrast)));
-		int RChannel = validatePixelValue((contrastFactor * (pixelValueArray[0] - contrast)) + contrast);
-		int GChannel = validatePixelValue((contrastFactor * (pixelValueArray[1] - contrast)) + contrast);
-		int BChannel = validatePixelValue((contrastFactor * (pixelValueArray[2] - contrast)) + contrast);
+		int RChannel = validatePixelValue((contrastFactor * (pixelValueArray[0] - 128)) + 128);
+		int GChannel = validatePixelValue((contrastFactor * (pixelValueArray[1] - 128)) + 128);
+		int BChannel = validatePixelValue((contrastFactor * (pixelValueArray[2] - 128)) + 128);
 		return new int[] { RChannel, GChannel, BChannel };
 	}
 

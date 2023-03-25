@@ -83,25 +83,22 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 			BACKUP_IMG.setTitle(img.getTitle());
 		}
 		
-		ImagePlus auxImg = BACKUP_IMG;
-		
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
 				
-				int newPixel = applyKernelToPixel(kernel, auxImg, column, row);
-				
-				imgProcessor.putPixel(column, row, newPixel);;
+				int newPixel = applyKernelToPixel(kernel, BACKUP_IMG, column, row);				
+				imgProcessor.putPixel(column, row, newPixel);
 			}
 		}
 		
-		auxImg.updateAndDraw();
+		img.updateAndDraw();
 	}
 
 	private int applyKernelToPixel(double[][] kernel, ImagePlus img, int column, int row) {
 		int coords[][] = {
-				{column-1, row-1},{column-1, row},{column-1,row+1},
-				{column+1, row},  {column, row},  {column, row+1},
-				{column+1, row-1},{column, row+1},{column+1, row+1}
+				{column-1, row-1},{column, row-1},{column+1, row-1},
+				{column-1, row},  {column, row},  {column+1, row},
+				{column-1, row+1},{column, row+1},{column+1, row+1}
 		};
 		
 		int newPixel = 0;
@@ -109,10 +106,9 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 		for(int i = 0; i < coords.length; i++ ) {
 			try {
 		    int adjacentImgPixel = img.getPixel(coords[i][0], coords[i][1])[0];
-		    double kernelToAdjancentPixel = kernel[coords[i][0]][coords[i][1]];
+		    double kernelToAdjancentPixel = kernel[i/3][i%3];
 		    newPixel += kernelToAdjancentPixel * adjacentImgPixel;
 	  	} catch (ArrayIndexOutOfBoundsException e) {}
-			System.out.println(newPixel);
 		}
 		
 		return newPixel;		

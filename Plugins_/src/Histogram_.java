@@ -153,8 +153,8 @@ public class Histogram_ implements PlugIn, DialogListener {
 
 		for (int row = 0; row < img.getHeight(); row++) {
 			for (int column = 0; column < img.getWidth(); column++) {
-				if (img.getPixel(row, column)[0] < lowestPixel) {
-					lowestPixel = img.getPixel(row, column)[0];
+				if (img.getPixel(column, row)[0] < lowestPixel) {
+					lowestPixel = img.getPixel(column, row)[0];
 				}
 			}
 		}
@@ -167,8 +167,8 @@ public class Histogram_ implements PlugIn, DialogListener {
 
 		for (int row = 0; row < img.getHeight(); row++) {
 			for (int column = 0; column < img.getWidth(); column++) {
-				if (img.getPixel(row, column)[0] > highestPixel) {
-					highestPixel = img.getPixel(row, column)[0];
+				if (img.getPixel(column, row)[0] > highestPixel) {
+					highestPixel = img.getPixel(column, row)[0];
 				}
 			}
 		}
