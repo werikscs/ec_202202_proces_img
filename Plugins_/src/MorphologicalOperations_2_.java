@@ -40,63 +40,87 @@ public class MorphologicalOperations_2_ implements PlugIn, DialogListener {
 
 	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-		String chosenFilter = gd.getNextRadioButton();
-
-		int structuringElement[][] = { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
-
-		if (chosenFilter.equals(Filters.DILATACAO.name())) {
-//  		IJ.showMessage(chosenFilter);
-			updateImage(structuringElement, 255);
-		}
-
-		if (chosenFilter.equals(Filters.EROSAO.name())) {
-//			IJ.showMessage(chosenFilter);
-			updateImage(structuringElement, 0);
-		}
-
-		if (chosenFilter.equals(Filters.FECHAMENTO.name())) {
-//			IJ.showMessage(chosenFilter);
-		}
-
-		if (chosenFilter.equals(Filters.ABERTURA.name())) {
-//			IJ.showMessage(chosenFilter);
-			updateImage(structuringElement, 0);
-			updateImage(structuringElement, 1);
-		}
-
-		if (chosenFilter.equals(Filters.BORDA_OUTLINE.name())) {
-			IJ.showMessage(chosenFilter);
-		}
-
-		return true;
-	}
-
-	private void updateImage(int structuringElement[][], int pixelOfInterestValue) {
 		ImagePlus img = IJ.getImage();
-		ImageProcessor imgProcessor = img.getProcessor();
-		int imgWidth = img.getWidth();
-		int imgHeight = img.getHeight();
-
+		
 		if (BACKUP_IMG == null) {
 			BACKUP_IMG = img.duplicate();
 			BACKUP_IMG.setTitle(img.getTitle());
 		}
 		
-		ImageProcessor backupImgProcessor = BACKUP_IMG.getProcessor();
+		String chosenFilter = gd.getNextRadioButton();
+
+		int structuringElement[][] = { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
+
+		if (chosenFilter.equals(Filters.DILATACAO.name())) {
+			// IJ.showMessage(chosenFilter);
+			ImagePlus dilatedImg = updateImage(img, BACKUP_IMG, structuringElement, 255);
+			dilatedImg.updateAndDraw();
+		}
+
+		if (chosenFilter.equals(Filters.EROSAO.name())) {
+			// IJ.showMessage(chosenFilter);
+			ImagePlus erodedImg = updateImage(img, BACKUP_IMG, structuringElement, 0);
+			erodedImg.updateAndDraw();
+		}
+
+		if (chosenFilter.equals(Filters.FECHAMENTO.name())) {
+			// IJ.showMessage(chosenFilter);
+			ImagePlus erodedImg = updateImage(img, BACKUP_IMG, structuringElement, 255);
+			ImagePlus duplicatedErodedImg = erodedImg.duplicate();
+			ImagePlus openedImg = updateImage(erodedImg, duplicatedErodedImg, structuringElement, 0);
+			openedImg.updateAndDraw();
+		}
+
+		if (chosenFilter.equals(Filters.ABERTURA.name())) {
+			// IJ.showMessage(chosenFilter);
+			ImagePlus erodedImg = updateImage(img, BACKUP_IMG, structuringElement, 0);
+			ImagePlus duplicatedErodedImg = erodedImg.duplicate();
+			ImagePlus openedImg = updateImage(erodedImg, duplicatedErodedImg, structuringElement, 255);
+			openedImg.updateAndDraw();
+		}
+
+		if (chosenFilter.equals(Filters.BORDA_OUTLINE.name())) {
+			// IJ.showMessage(chosenFilter);
+			ImagePlus erodedImg = updateImage(img, BACKUP_IMG, structuringElement, 0);
+			ImagePlus subtractedImg = subtractImages(erodedImg, BACKUP_IMG);
+			subtractedImg.updateAndDraw();
+		}
+
+		return true;
+	}
+
+	private ImagePlus subtractImages(ImagePlus erodedImg, ImagePlus originalImage) {
+		ImageProcessor erodedImgProcessor = erodedImg.getProcessor();
+		
+		for (int x = 0; x < erodedImg.getWidth(); x++) {
+	    for (int y = 0; y < erodedImg.getHeight(); y++) {
+        int pixelOriginal = originalImage.getPixel(x, y)[0];
+        int pixelEroded = erodedImg.getPixel(x, y)[0];
+        int result = Math.max(0, pixelOriginal - pixelEroded);
+        erodedImgProcessor.putPixel(x, y, result);
+	    }
+		}
+		
+		return erodedImg;
+	}
+
+	private ImagePlus updateImage(ImagePlus img, ImagePlus backupImg, int structuringElement[][], int pixelOfInterestValue) {
+		ImageProcessor imgProcessor = img.getProcessor();
+		ImageProcessor backupImgProcessor = backupImg.getProcessor();
+		
+		int imgWidth = img.getWidth();
+		int imgHeight = img.getHeight();		
 
 		for (int row = 0; row < imgHeight; row++) {
 			for (int column = 0; column < imgWidth; column++) {
-
 				int currentPixel = backupImgProcessor.getPixel(column, row);
-				
 				if (currentPixel == pixelOfInterestValue) {
 					applyOperation(structuringElement, imgProcessor, column, row, pixelOfInterestValue);
 				}	
-
 			}
 		}
 
-		img.updateAndDraw();
+		return img;
 	}
 
 	private void applyOperation(int[][] structuringElement, ImageProcessor imgProcessor, int column,	int row, int value) {
@@ -116,7 +140,6 @@ public class MorphologicalOperations_2_ implements PlugIn, DialogListener {
 			} catch (ArrayIndexOutOfBoundsException e) {}
 		}
 		return;
-
 	}
 
 	enum Filters {
