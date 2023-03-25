@@ -52,6 +52,7 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 		String chosenFilter = gd.getNextRadioButton();
 
 		if (chosenFilter.equals(Filters.PASSA_BAIXA.name())) {
+			//  Média Aritmética
 			double kernelMean = 1 / 9.0;
 			double kernel[][] = {
 					{ kernelMean, kernelMean, kernelMean },
@@ -62,11 +63,22 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 		}
 
 		if (chosenFilter.equals(Filters.PASSA_ALTA.name())) {
-			IJ.showMessage(chosenFilter);
+			double kernel[][] = {
+					{ 0, -1, 0 },
+					{ -1, 5, -1},
+					{ 0, -1, 0 }
+			};
+			updateImage(kernel);
 		}
 
 		if (chosenFilter.equals(Filters.DE_BORDA.name())) {
-			IJ.showMessage(chosenFilter);
+			// norte
+			double kernel[][] = {
+					{ 1, 1, 1 },
+					{ 1, -2, 1},
+					{ -1, -1, -1 }
+			};
+			updateImage(kernel);
 		}
 
 		return true;
@@ -115,7 +127,7 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 	}
 
 	enum Filters {
-		PASSA_BAIXA("Passa-baixa de média x"), PASSA_ALTA("Passa-alta de x"), DE_BORDA("De borda x");
+		PASSA_BAIXA("Passa-baixa"), PASSA_ALTA("Passa-alta"), DE_BORDA("De borda");
 
 		Filters(String filter) {
 		}
