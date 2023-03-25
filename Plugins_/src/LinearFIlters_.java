@@ -32,7 +32,7 @@ public class LinearFIlters_ implements PlugIn, DialogListener {
 
 		genericDialog.addMessage("Escolha o filtro:");
 		String filters[] = { Filters.PASSA_BAIXA.name(), Filters.PASSA_ALTA.name(), Filters.DE_BORDA.name() };
-		genericDialog.addRadioButtonGroup(null, filters, 3, 1, Filters.PASSA_BAIXA.name());
+		genericDialog.addRadioButtonGroup(null, filters, 3, 1, null);
 
 		genericDialog.showDialog();
 		return genericDialog;
